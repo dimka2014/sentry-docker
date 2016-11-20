@@ -3,51 +3,32 @@ version: '2'
 services:
   sentry-redis:
     image: redis
+    container_name: sentry-redis
     restart: always
 
   sentry-postgres:
-    environment:
-    - POSTGRES_PASSWORD=secret
-    - POSTGRES_USER=sentry
     image: postgres
-    restart: always
-
-  my-sentry:
     environment:
-    - SENTRY_SECRET_KEY='${SECRET_KEY}'
-    - SENTRY_REDIS_HOST=redis
-    - SENTRY_POSTGRES_HOST=postgres
-    - SENTRY_DB_USER=sentry
-    - SENTRY_DB_PASSWORD=secret
-    links:
-    - sentry-redis:redis
-    - sentry-postgres:postgres
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    restart: always
+    container_name: sentry-postgres
+    volumes:
+      - ./data:/var/lib/postgresql/data
+
+  sentry:
     image: sentry
-    ports:
-    - "8080:9000"
+    environment:
+      - SENTRY_SECRET_KEY=${SECRET_KEY}
+      - SENTRY_REDIS_HOST=sentry-redis
+      - SENTRY_POSTGRES_HOST=sentry-postgres
+      - SENTRY_DB_USER=${POSTGRES_USER}
+      - SENTRY_DB_PASSWORD=${POSTGRES_PASSWORD}
 
   sentry-cron:
-    environment:
-    - SENTRY_SECRET_KEY='${SECRET_KEY}'
-    - SENTRY_REDIS_HOST=redis
-    - SENTRY_POSTGRES_HOST=postgres
-    - SENTRY_DB_USER=sentry
-    - SENTRY_DB_PASSWORD=secret
-    links:
-    - sentry-postgres:postgres
-    - sentry-redis:redis
-    image: sentry
+    extends: sentry
     command: sentry run cron
 
   sentry-worker-1:
-    environment:
-    - SENTRY_SECRET_KEY='${SECRET_KEY}'
-    - SENTRY_REDIS_HOST=redis
-    - SENTRY_POSTGRES_HOST=postgres
-    - SENTRY_DB_USER=sentry
-    - SENTRY_DB_PASSWORD=secret
-    links:
-    - sentry-postgres:postgres
-    - sentry-redis:redis
-    image: sentry
+    extends: sentry
     command: sentry run worker

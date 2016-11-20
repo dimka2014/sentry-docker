@@ -1,0 +1,6 @@
+version: '2'
+
+services:
+  sentry:
+    ports: 
+      - "9090:9000"
