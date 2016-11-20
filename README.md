@@ -10,6 +10,10 @@ docker run --rm sentry config generate-secret-key
 ```
 cp .env-default .env
 ```
+## Create directory for postgres data volume
+```
+mkdir data
+```
 ## Start docker-compose
 ```
 docker-compose -f docker-compose.yml -f docker-compose.exposed.yml up -d
