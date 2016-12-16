@@ -18,6 +18,7 @@ services:
 
   sentry:
     image: sentry
+    restart: always
     environment:
       - SENTRY_SECRET_KEY=${SECRET_KEY}
       - SENTRY_REDIS_HOST=sentry-redis
